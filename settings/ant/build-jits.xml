@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant">
+	<property name="jits.from.resolver" value="public" />
+	<property name="jits.to.resolver" value="inline" />
+
+	<target name="publish" depends="init-ivy" description="编译并发布至JITS内部仓库(ivy)">
+		<if>
+			<equals arg1="${project.ivy}-${project.type}" arg2="true-jar" />
+			<then>
+				<antcall inheritall="true" target="clean"/>
+				<antcall inheritall="true" target="jar"/>
+				
+				<ivy:info settingsRef="jits.ivy.settings" />
+				<ivy:resolve settingsRef="jits.ivy.settings" />
+				<ivy:publish settingsRef="jits.ivy.settings" artifactspattern="${project.build.dir}/[artifact].[ext]" resolver="inline" pubrevision="${project.version}" forcedeliver="true" overwrite="true" update="true"/>
+				<delete dir="${ivy.default.ivy.user.dir}/cache/${project.organisation}/${project.name}"/>
+			</then>
+			<else>
+				<echo>当前工程不支持ivy命令</echo>
+			</else>
+		</if>
+	</target>
+	
+	<target name="clean-inline" depends="init-ivy">
+		<if>
+			<equals arg1="${project.ivy}" arg2="true" />
+			<then>
+				<loadfile property="jits.inline.libs.list.read.ctx" srcfile="${jits.sdk.settings.dir}/ant/inline.libs" />
+				<for list="${jits.inline.libs.list.read.ctx}" delimiter="${line.separator}" param="jits.inline.libs.readed.line">
+					<sequential>
+						<propertyregex property="jits.inline.temp.lib.org" override="true" input="@{jits.inline.libs.readed.line}" regexp="org=&quot;([^ ^\s]+)&quot;" select="\1" />
+						<propertyregex property="jits.inline.temp.lib.name" override="true" input="@{jits.inline.libs.readed.line}" regexp="name=&quot;([^ ^\s]+)&quot;" select="\1" />
+						<propertyregex property="jits.inline.temp.lib.rev" override="true" input="@{jits.inline.libs.readed.line}" regexp="rev=&quot;([^ ^\s]+)&quot;" select="\1" />
+						<echo>${jits.sdk.dir}/libs/inline/${jits.inline.temp.lib.name}</echo>
+						<delete dir="${jits.sdk.dir}/libs/inline/${jits.inline.temp.lib.name}" failonerror="false" />
+					</sequential>
+				</for>
+				<sequential>
+					<delete dir="${jits.sdk.dir}/libs/inline/**" failonerror="false" />
+				</sequential>
+			</then>
+			<else>
+				<echo>当前工程不支持ivy命令</echo>
+			</else>
+		</if>
+	</target>
+
+	<target name="init-inline" depends="install-external">
+		<if>
+			<equals arg1="${project.ivy}" arg2="true" />
+			<then>
+				<loadfile property="jits.inline.libs.list.read.ctx" srcfile="${jits.sdk.settings.dir}/ant/inline.libs" />
+				<for list="${jits.inline.libs.list.read.ctx}" delimiter="${line.separator}" param="jits.inline.libs.readed.line">
+					<sequential>
+						<propertyregex property="jits.inline.temp.lib.org" override="true" input="@{jits.inline.libs.readed.line}" regexp="org=&quot;([^ ^\s]+)&quot;" select="\1" />
+						<propertyregex property="jits.inline.temp.lib.name" override="true" input="@{jits.inline.libs.readed.line}" regexp="name=&quot;([^ ^\s]+)&quot;" select="\1" />
+						<propertyregex property="jits.inline.temp.lib.rev" override="true" input="@{jits.inline.libs.readed.line}" regexp="rev=&quot;([^ ^\s]+)&quot;" select="\1" />
+						<if>
+							<equals arg1="${jits.inline.temp.lib.name}" arg2="" />
+							<then>
+							</then>
+							<else>
+								<ivy:install settingsRef="jits.ivy.settings" organisation="${jits.inline.temp.lib.org}" module="${jits.inline.temp.lib.name}" revision="${jits.inline.temp.lib.rev}" from="${jits.from.resolver}" to="${jits.to.resolver}" overwrite="true" type="jar" />
+							</else>
+						</if>
+					</sequential>
+
+				</for>
+			</then>
+			<else>
+				<echo>当前工程不支持ivy命令</echo>
+			</else>
+		</if>
+	</target>
+
+	<target name="install-external" depends="init-ivy">
+		<if>
+			<equals arg1="${project.ivy}" arg2="true" />
+			<then>
+				<loadfile property="jits.external.libs.list.read.ctx" srcfile="${jits.sdk.dir}/libs/external/external.libs" />
+				<for list="${jits.external.libs.list.read.ctx}" delimiter="${line.separator}" param="jits.external.libs.readed.line">
+					<sequential>
+						<propertyregex property="jits.external.temp.lib.org" override="true" input="@{jits.external.libs.readed.line}" regexp="org=&quot;([^ ^\s]+)&quot;" select="\1" />
+						<propertyregex property="jits.external.temp.lib.name" override="true" input="@{jits.external.libs.readed.line}" regexp="name=&quot;([^ ^\s]+)&quot;" select="\1" />
+						<propertyregex property="jits.external.temp.lib.rev" override="true" input="@{jits.external.libs.readed.line}" regexp="rev=&quot;([^ ^\s]+)&quot;" select="\1" />
+						<if>
+							<equals arg1="${jits.inline.temp.lib.name}" arg2="" />
+							<then>
+							</then>
+							<else>
+								<ivy:info settingsRef="jits.ivy.settings" file="${jits.sdk.dir}/libs/external/ivy.xml" />
+								<ivy:publish settingsRef="jits.ivy.settings" artifactspattern="${jits.sdk.dir}/libs/external/[artifact].[ext]" resolver="inline" pubrevision="${jits.external.temp.lib.rev}" forcedeliver="false" overwrite="true" update="true">
+								</ivy:publish>
+								<ivy:cleancache settingsRef="jits.ivy.settings" />
+							</else>
+						</if>
+					</sequential>
+				</for>
+			</then>
+			<else>
+				<echo>当前工程不支持ivy命令</echo>
+			</else>
+		</if>
+	</target>
+</project>

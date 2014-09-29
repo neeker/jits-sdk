@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="build" name="PROJECT_NAME">
+	<property environment="env" />
+	<property file="${basedir}/ant.properties" />
+	<path id="project.build.depends">
+		<!-- 此处引入非依赖管理库
+		<pathelement location="You Library Path"/>
+		-->
+	</path>
+	<path id="project.test.depends">
+	    <pathelement location="${jits.sdk.dir}/libs/external/testng.jar"/>
+	    <pathelement location="${jits.sdk.dir}/libs/external/junit.jar"/>
+	    <pathelement location="${jits.sdk.dir}/libs/external/jcommander.jar"/>
+	    <!-- 此处引入测试非依赖管理库
+		<pathelement location="You Library Path"/>
+		-->
+	</path>
+	<import file="${jits.sdk.dir}/settings/ant/build.xml" />
+</project>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant">
+	<property environment="env" />
+	<property name="jits.sdk.dir" value="${env.JITS_HOME}" />
+	<property name="project.dir" value="${target.project.path}" />
+	<property name="project.type" value="${target.project.type}" />
+	<property name="project.org" value="${target.project.org}" />
+	<property name="project.name" value="${target.project.name}" />
+	<property name="project.version" value="0.1" />
+	<import file="${jits.sdk.dir}/settings/ant/build.xml" />
+
+	<target name="do-create-project">
+		<mkdir dir="${project.src.dir}" />
+		<mkdir dir="${project.test.src.dir}" />
+		
+		<copy file="${jits.sdk.settings.dir}/ant/tmp.ant.properties" tofile="${project.dir}/ant.properties" />
+		<copy file="${jits.sdk.settings.dir}/ant/tmp.build.xml" tofile="${project.dir}/build.xml" />
+		<copy file="${jits.sdk.settings.dir}/ant/tmp.ivy.xml" tofile="${project.dir}/ivy.xml" />
+		<copy file="${jits.sdk.settings.dir}/ant/tmp.testng.xml" tofile="${project.dir}/test/testng.xml" />
+		<copy file="${jits.sdk.settings.dir}/ant/tmp.log4j.properties" tofile="${project.dir}/test/log4j.properties" />
+		<copy file="${jits.sdk.settings.dir}/ant/tmp.MANIFEST.MF" tofile="${project.build.metainf}" />
+
+		<replace file="${project.dir}/ant.properties" token="PROJECT_NAME" value="${project.name}" encoding="utf-8" />
+		<replace file="${project.dir}/ant.properties" token="PROJECT_ORG" value="${project.org}" encoding="utf-8" />
+		<replace file="${project.dir}/ant.properties" token="PROJECT_TYPE" value="${project.type}" encoding="utf-8" />
+		<replace file="${project.dir}/ant.properties" token="PROJECT_VER" value="${project.version}" encoding="utf-8" />
+
+		<replace file="${project.dir}/build.xml" token="PROJECT_NAME" value="${project.name}" encoding="utf-8" />
+		<replace file="${project.dir}/build.xml" token="PROJECT_ORG" value="${project.org}" encoding="utf-8" />
+		<replace file="${project.dir}/build.xml" token="PROJECT_TYPE" value="${project.type}" encoding="utf-8" />
+
+		<replace file="${project.dir}/ivy.xml" token="PROJECT_NAME" value="${project.name}" encoding="utf-8" />
+		<replace file="${project.dir}/ivy.xml" token="PROJECT_ORG" value="${project.org}" encoding="utf-8" />
+		<replace file="${project.dir}/ivy.xml" token="PROJECT_TYPE" value="${project.type}" encoding="utf-8" />
+		
+		<replace file="${project.dir}/test/testng.xml" token="PROJECT_NAME" value="${project.name}" encoding="utf-8" />
+		<replace file="${project.dir}/test/testng.xml" token="PROJECT_ORG" value="${project.org}" encoding="utf-8" />
+		
+		<replace file="${project.build.metainf}" token="PROJECT_NAME" value="${project.name}" encoding="utf-8" />
+		<replace file="${project.build.metainf}" token="PROJECT_ORG" value="${project.org}" encoding="utf-8" />
+		<replace file="${project.build.metainf}" token="PROJECT_VER" value="${project.version}" encoding="utf-8" />
+		
+		<ant antfile="${project.dir}/build.xml" target="init" dir="${project.dir}"/>
+	</target>
+
+
+	<target name="create-project">
+		<condition property="project.dir.existed">
+			<and>
+				<available file="${project.dir}" type="dir" />
+			</and>
+		</condition>
+		<fail if="project.dir.existed" message="${project.name} in path '${project.dir}' is existed" />
+		<antcall target="do-create-project" />
+	</target>
+</project>

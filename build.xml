@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="build" name="jits-utils">
+	<property environment="env" />
+	<property file="${basedir}/ant.properties" />
+	<path id="project.build.depends" />
+	<path id="project.test.depends" />
+	<import file="${jits.sdk.dir}/settings/ant/build.xml" />
+</project>

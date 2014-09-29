@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Specification-Title: PROJECT_NAME
+Specification-Version: PROJECT_VER
+Specification-Vendor: PROJECT_ORG
+Implementation-Title: PROJECT_NAME
+Implementation-URL: 
+Implementation-Version: PROJECT_VER
+Implementation-Vendor: PROJECT_ORG

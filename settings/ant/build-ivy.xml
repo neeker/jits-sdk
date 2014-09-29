@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant">
+
+	<!-- ivy setting -->
+	<property name="ivy.lib.dir" value="${project.libs.dir}" />
+	<property name="ivy.default.ivy.user.dir" value="${jits.sdk.dir}/libs" />
+	<property name="jits.ivy.settings.dir" location="${jits.sdk.settings.dir}/ivy" />
+	<property name="jits.ivy.settings.file" value="${jits.ivy.settings.dir}/ivysettings.xml" />
+
+	<target name="load-ivy">
+		<if>
+			<equals arg1="${project.ivy}" arg2="true" />
+			<then>
+				<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="jits.classpath.ant" onerror="ignore" />
+			</then>
+			<else>
+			</else>
+		</if>
+	</target>
+
+	<target name="init-ivy" depends="load-ivy">
+		<if>
+			<equals arg1="${project.ivy}" arg2="true" />
+			<then>
+				<ivy:settings id="jits.ivy.settings" file="${jits.ivy.settings.file}" />
+			</then>
+			<else>
+			</else>
+		</if>
+	</target>
+
+	<target name="ivy-resolve-depends" depends="init-ivy">
+		<if>
+			<equals arg1="${project.ivy}" arg2="true" />
+			<then>
+				<if>
+					<equals arg1="${project.type}" arg2="non" />
+					<then>
+						<echo>no require ivy</echo>
+					</then>
+					<else>
+						<ivy:retrieve settingsRef="jits.ivy.settings" conf="${project.ivy.conf}" overwriteMode="always" />
+					</else>
+				</if>
+			</then>
+			<else>
+				<echo>当前工程不支持ivy命令</echo>
+			</else>
+		</if>
+	</target>
+
+	<target name="ivy-clean-cache" depends="init-ivy">
+		<if>
+			<equals arg1="${project.ivy}" arg2="true" />
+			<then>
+				<ivy:cleancache settingsRef="jits.ivy.settings" />
+			</then>
+			<else>
+				<echo>当前工程不支持ivy命令</echo>
+			</else>
+		</if>
+	</target>
+
+	<target name="ivy-clean-inline" depends="init-ivy">
+		<if>
+			<equals arg1="${project.ivy}" arg2="true" />
+			<then>
+				<delete dir="${jits.sdk.dir}/libs/inline"/>
+			</then>
+			<else>
+				<echo>当前工程不支持ivy命令</echo>
+			</else>
+		</if>
+	</target>
+	
+	<target name="ivy-clean-all" depends="ivy-clean-inline, ivy-clean-cache"/>
+	
+	<target name="ivy-get-depends" depends="init-ivy">
+		<if>
+			<equals arg1="${project.ivy}" arg2="true" />
+			<then>
+				<ivy:artifactproperty settingsRef="jits.ivy.settings" name="ivy.libs.file.[artifact]-[revision]" value="${project.libs.dir}/[artifact]-[revision].[ext]" />
+				<propertyset id="project.ivy.depends">
+					<propertyref prefix="ivy.libs.file." />
+				</propertyset>
+				<pathconvert refid="project.ivy.depends" pathsep="${line.separator}" property="project.ivy.depends" />
+			</then>
+			<else>
+				<echo>当前工程不支持ivy命令</echo>
+			</else>
+		</if>
+	</target>
+</project>

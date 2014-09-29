@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project>
+	<target name="create_war_eclipse3.6">
+		<copy file="${jits.sdk.settings.dir}/ide/eclipse3.6/${project.type}.project" tofile="${project.dir}/.project" overwrite="true" />
+		<copy file="${jits.sdk.settings.dir}/ide/eclipse3.6/${project.type}.classpath" tofile="${project.dir}/.classpath" overwrite="true" />
+	    <copy todir="${project.dir}/.settings" overwrite="true">
+			<fileset dir="${jits.sdk.settings.dir}/ide/eclipse3.6/${project.type}.settings">
+				<exclude name="**/.svn" />
+				<exclude name="**/.git" />
+			</fileset>
+		</copy>
+		
+		<replace file="${project.dir}/.project" token="PROJECT_NAME" value="${project.name}" />
+		<replace file="${project.dir}/.classpath" token="TARGET.JRE.VERSION" value="${project.target.jre.version}" />
+		
+		<replace file="${project.dir}/.settings/org.eclipse.jdt.core.prefs" token="TARGET.JRE.VERSION" value="${project.target.jre.version}" />
+		<replace file="${project.dir}/.settings/org.eclipse.jdt.core.prefs" token="SRC.JDK.VERSION" value="${project.src.jdk.version}" />
+		<replace file="${project.dir}/.settings/org.eclipse.wst.common.component" token="PROJECT_NAME" value="${project.name}" />		
+		<replace file="${project.dir}/.settings/org.eclipse.wst.common.project.facet.core.xml" token="TARGET.JRE.VERSION" value="${project.target.jre.version}" />		
+		<replace file="${project.dir}/.settings/org.eclipse.wst.common.project.facet.core.xml" token="TARGET.JST.VERSION" value="${project.target.jst.version}" />		
+	</target>
+	
+	<target name="create_jar_eclipse3.6">
+		<echo file="${project.dir}/.classpath" append="false">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;classpath&gt;
+  &lt;classpathentry kind=&quot;src&quot; path=&quot;src&quot;/&gt;
+  &lt;classpathentry kind=&quot;src&quot; path=&quot;test&quot;/&gt;
+</echo>
+		<pathconvert pathsep="," property="jits.eclipse.depends.temp" refid="jits.eclipse.classpath.depends" />
+		<for list="${jits.eclipse.depends.temp}" delimiter="," param="jits.eclipse.depends.item">
+			<sequential>
+				<echo file="${project.dir}/.classpath" append="true">  &lt;classpathentry kind=&quot;lib&quot; path=&quot;@{jits.eclipse.depends.item}&quot; /&gt;	
+</echo>
+			</sequential>
+		</for>
+		<echo file="${project.dir}/.classpath" append="true">  &lt;classpathentry kind=&quot;con&quot; path=&quot;org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-${project.src.jdk.version}&quot;/&gt;
+  &lt;classpathentry kind=&quot;output&quot; path=&quot;build&quot;/&gt;
+&lt;/classpath&gt;
+			</echo>
+		<copy todir="${project.dir}/.settings" overwrite="true">
+			<fileset dir="${jits.sdk.settings.dir}/ide/eclipse3.6/${project.type}.settings">
+				<exclude name="**/.svn" />
+				<exclude name="**/.git" />
+			</fileset>
+		</copy>
+		<copy file="${jits.sdk.settings.dir}/ide/eclipse3.6/${project.type}.project" tofile="${project.dir}/.project" overwrite="true" />
+		<replace file="${project.dir}/.project" token="PROJECT_NAME" value="${project.name}" />
+		<replace file="${project.dir}/.settings/org.eclipse.jdt.core.prefs" token="TARGET.JRE.VERSION" value="${project.target.jre.version}" />
+		<replace file="${project.dir}/.settings/org.eclipse.jdt.core.prefs" token="SRC.JDK.VERSION" value="${project.src.jdk.version}" />
+	</target>
+	
+	<target name="create_non_eclipse3.6">
+		<copy file="${jits.sdk.settings.dir}/ide/eclipse3.6/${project.type}.project" tofile="${project.dir}/.project" overwrite="true" />
+		<replace file="${project.dir}/.project" token="PROJECT_NAME" value="${project.name}" />
+	</target>
+	
+	<!-- create eclipse project -->
+	<target name="eclipse" depends="init" description="生成Eclipse3.6版本的工程文件用于导入至Eclipse3.6中">
+		<if>
+			<equals arg1="${project.type}" arg2="war" />
+			<then>
+				<antcall target="create_war_eclipse3.6"/>
+			</then>
+			<elseif>
+				<equals arg1="${project.type}" arg2="jar" />
+				<then>
+					<antcall target="create_jar_eclipse3.6"/>
+				</then>
+			</elseif>
+			<else>
+				<antcall target="create_non_eclipse3.6"/>
+			</else>
+		</if>
+	</target>
+</project>
+

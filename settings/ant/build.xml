@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant">
+	<property name="project.dir" value="${basedir}" />
+	<property name="project.dist.debuglevel" value="source,lines,vars" />
+
+	<!-- ant library -->
+	<path id="jits.classpath.ant">
+		<pathelement location="${ant.library.dir}/ant.jar" />
+		<pathelement location="${jits.sdk.dir}/libs/external/ant-contrib.jar" />
+		<pathelement location="${jits.sdk.dir}/libs/external/ivy.jar" />
+	</path>
+	<taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="jits.classpath.ant" />
+
+	<if>
+		<isset property="project.type" />
+		<then>
+			<if>
+				<equals arg1="${project.type}" arg2="war" />
+				<then>
+					<property name="project.type" value="war" />
+				</then>
+				<elseif>
+					<equals arg1="${project.type}" arg2="non" />
+					<then>
+						<property name="project.type" value="non" />
+					</then>
+				</elseif>
+				<else>
+					<property name="project.type" value="jar" />
+				</else>
+			</if>
+		</then>
+		<else>
+			<property name="project.type" value="non" />
+		</else>
+	</if>
+
+	<if>
+		<isset property="project.jre.version" />
+		<then>
+		</then>
+		<else>
+			<property name="project.jre.version" value="1.5" />
+		</else>
+	</if>
+
+	<if>
+		<isset property="project.jdk.version" />
+		<then>
+		</then>
+		<else>
+			<property name="project.jdk.version" value="1.5" />
+		</else>
+	</if>
+
+	<if>
+		<isset property="project.ivy.conf" />
+		<then>
+		</then>
+		<else>
+			<property name="project.ivy.conf" value="default" />
+		</else>
+	</if>
+
+	<if>
+		<isset property="project.jst.version" />
+		<then>
+		</then>
+		<else>
+			<property name="project.jst.version" value="2.5" />
+		</else>
+	</if>
+
+	<property name="project.src.dir" value="${project.dir}/src" />
+	<property name="project.web.root" value="${project.dir}/root" />
+	<property name="project.test.src.dir" value="${project.dir}/test" />
+	<property name="project.build.dir" value="${project.dir}/build" />
+	
+	<if>
+		<equals arg1="${project.type}" arg2="war" />
+		<then>
+			<property name="project.libs.dir" value="${project.web.root}/WEB-INF/lib" />
+			<property name="project.build.classes.dir" value="${project.build.dir}/WEB-INF/classes" />
+			<property name="project.build.metainf" value="${project.web.root}/META-INF/MANIFEST.MF"/>
+		</then>
+		<else>
+			<property name="project.libs.dir" value="${project.dir}/libs" />
+			<property name="project.build.classes.dir" value="${project.build.dir}/classes" />
+			<property name="project.build.metainf" value="${project.src.dir}/META-INF/MANIFEST.MF"/>
+		</else>
+	</if>
+
+	<property name="project.src.encoding" value="utf-8" />
+
+	<property name="project.jar.filename" value="${project.name}.jar" />
+	<property name="project.jar.version.filename" value="${project.name}-${project.version}.jar" />
+	<property name="project.war.filename" value="${project.name}.war" />
+	<property name="project.war.version.filename" value="${project.name}-${project.version}.war" />
+	<property name="project.docs.filename" value="${project.name}-docs-${project.version}.zip" />
+	<property name="project.tar.filename" value="${project.name}-${project.version}.zip" />
+	<property name="project.src.filename" value="${project.name}-sources-${project.version}.jar" />
+	<property name="project.apidoc.dir" value="${project.build.dir}/apidoc" />
+	<property name="project.test.jar.filename" value="${project.name}-test-${project.version}.jar" />
+
+	<!-- jits commons property -->
+	<property name="jits.sdk.settings.dir" value="${jits.sdk.dir}/settings" />
+	<property name="jits.sdk.libs.dir" value="${jits.sdk.dir}/libs" />
+	<property name="jits.sdk.tools.dir" value="${jits.sdk.dir}/tools" />
+
+	<property name="project.target.jre.version" value="${project.jre.version}" />
+	<property name="project.target.jst.version" value="${project.jst.version}" />
+	<property name="project.src.jdk.version" value="${project.jdk.version}" />
+
+	<!-- projects libs directory -->
+	<path id="jits.classpath.project.libs">
+		<fileset dir="${project.libs.dir}">
+			<include name="**/*.jar" />
+			<include name="**/*.zip" />
+			<exclude name="**/.svn" />
+			<exclude name="**/.git" />
+			<exclude name="**/*-sources.jar" />
+			<exclude name="**/*-javadoc.jar" />
+		</fileset>
+	</path>
+
+	<!-- depends library  -->
+	<path id="jits.classpath.depends">
+		<path refid="project.build.depends" />
+		<path refid="jits.classpath.project.libs" />
+	</path>
+
+	<!-- project build classpath -->
+	<path id="jits.project.build.classpath">
+		<pathelement location="${project.build.classes.dir}" />
+		<path refid="jits.classpath.depends" />
+	</path>
+
+	<!-- project test classpath -->
+	<path id="jits.project.test.classpath">
+		<path refid="jits.project.build.classpath" />
+		<path refid="project.test.depends" />
+	</path>
+	
+	<!-- eclipse build depends library  -->
+	<path id="jits.eclipse.classpath.depends">
+		<path refid="jits.classpath.depends" />
+		<path refid="project.test.depends" />
+	</path>
+
+	<!-- initialize project target directory -->
+	<target name="init">
+		<mkdir dir="${project.build.classes.dir}" />
+		<mkdir dir="${project.libs.dir}" />
+		<antcall target="ivy-resolve-depends" />
+		<copy includeemptydirs="false" todir="${project.build.classes.dir}" failonerror="false">
+			<fileset dir="${project.src.dir}">
+				<exclude name="**/*.launch" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+		<if>
+			<equals arg1="${project.type}" arg2="war"/>
+			<then>
+				<copy includeemptydirs="true" todir="${project.build.dir}">
+					<fileset dir="${project.web.root}" />
+				</copy>
+				<copy todir="${project.build.dir}/WEB-INF/lib" overwrite="true" flatten="true">
+					<path refid="jits.classpath.depends" />
+				</copy>
+			</then>
+			<else>
+			</else>
+		</if>
+	</target>
+
+	<!-- clean project target directory -->
+	<target name="clean" description="清理所有编译文件">
+		<delete dir="${project.build.classes.dir}" />
+		<delete dir="${project.build.dir}" />
+	</target>
+
+	<target name="cleanall" depends="clean, ivy-get-depends" description="清理所有编译文件及本地依赖库">
+		<for list="${project.ivy.depends}" delimiter="${line.separator}" param="project.ivy.depends.delete.file">
+			<sequential>
+				<delete file="@{project.ivy.depends.delete.file}" />
+			</sequential>
+		</for>
+		<delete failonerror="false">
+			<fileset dir="${project.libs.dir}">
+				<include name="*.jar"/>
+				<include name="*.zip"/>
+				<include name="*.war"/>
+			</fileset>
+		</delete>
+		<delete dir="${project.dir}/test-output"/>
+	</target>
+
+	<target depends="build-subprojects, build-project" name="build" description="编译工程类文件"/>
+	<target name="build-subprojects" />
+
+	<!-- build project -->
+	<target depends="init" name="build-project">
+		<echo message="Building project classes..." />
+		<javac debug="true" debuglevel="${project.dist.debuglevel}" destdir="${project.build.classes.dir}" source="${project.src.jdk.version}" target="${project.target.jre.version}" encoding="${project.src.encoding}" includeantruntime="true" includejavaruntime="true">
+			<src path="${project.src.dir}" />
+			<classpath refid="jits.project.build.classpath" />
+		</javac>
+	</target>
+
+	<!-- package jar -->
+	<target name="jar" description="编译工程并生成.jar文件">
+		<if>
+			<equals arg1="${project.type}" arg2="jar"/>
+			<then>
+				<antcall inheritall="true" target="build"/>
+				<jar destfile="${project.build.dir}/${project.jar.filename}" manifest="${project.build.metainf}" manifestencoding="${project.src.encoding}">
+					<fileset dir="${project.build.dir}/classes" />
+				</jar>
+				<copy tofile="${project.build.dir}/${project.jar.version.filename}" file="${project.build.dir}/${project.jar.filename}"/>
+			</then>
+			<else>
+				<echo>当前工程类型(${project.type})不支持jar命令</echo>
+			</else>
+		</if>
+	</target>
+	
+	<!-- package war -->
+	<target name="war" description="编译工程并生成.war文件">
+		<if>
+			<equals arg1="${project.type}" arg2="war"/>
+			<then>
+				<antcall inheritall="true" target="build"/>
+				<war destfile="${project.build.dir}/${project.war.filename}" basedir="${project.build.dir}" manifest="${project.build.metainf}" manifestencoding="${project.src.encoding}">
+					<classes dir="${project.build.classes.dir}"/>
+					<exclude name="classes"/>
+				</war>
+				<copy tofile="${project.build.dir}/${project.war.version.filename}" file="${project.build.dir}/${project.war.filename}"/>
+			</then>
+			<else>
+				<echo>当前工程类型(${project.type})不支持war命令</echo>
+			</else>
+		</if>
+	</target>
+
+	<!-- test project -->
+	<target depends="init" name="init-test">
+		<copy includeemptydirs="false" todir="${project.build.classes.dir}">
+			<fileset dir="${project.test.src.dir}">
+				<exclude name="**/*.launch" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+	<target depends="init-test, build" name="build-test">
+		<echo message="Building test classes..." />
+		<javac debug="true" debuglevel="${project.dist.debuglevel}" destdir="${project.build.classes.dir}" source="${project.src.jdk.version}" target="${project.target.jre.version}" encoding="${project.src.encoding}" includeantruntime="true" includejavaruntime="true">
+			<src path="${project.test.src.dir}" />
+			<classpath refid="jits.project.test.classpath" />
+		</javac>
+	</target>
+	<target name="test" depends="build-test">
+		<delete dir="${project.dir}/test-output"/>
+		<taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="jits.project.test.classpath" onerror="ignore" />
+		<jar destfile="${project.build.dir}/${project.test.jar.filename}" manifest="${project.build.metainf}" manifestencoding="${project.src.encoding}">
+			<fileset dir="${project.build.classes.dir}" />
+		</jar>
+		<testng workingdir="${project.dir}" testjar="${project.build.dir}/${project.test.jar.filename}" classpathref="jits.project.test.classpath" outputdir="${project.dir}/test-output" />
+		<antcall target="clean"/>
+		<echo>Test report in ${project.dir}/test-output</echo>
+	</target>
+
+	<!-- apidoc -->
+	<target depends="init" name="docs" description="生成并打包所有文档文件">
+		<delete dir="${project.apidoc.dir}" />
+		<javadoc destdir="${project.apidoc.dir}" encoding="${project.src.encoding}" docencoding="${project.src.encoding}" failonerror="false">
+			<packageset dir="${project.src.dir}" />
+			<doctitle>${project.name} API</doctitle>
+			<bottom>Document AUTO Generator.</bottom>
+		</javadoc>
+		<property name="project.apidoc.tar.dir" value="${project.build.dir}/apidoc-tar" />
+		<delete dir="${project.apidoc.tar.dir}" />
+		<mkdir dir="${project.apidoc.tar.dir}" />
+		<copy todir="${project.apidoc.tar.dir}/reference" failonerror="false">
+			<fileset dir="${project.dir}/doc" />
+		</copy>
+		<copy todir="${project.apidoc.tar.dir}/javadoc-api">
+			<fileset dir="${project.apidoc.dir}" />
+		</copy>
+		<zip destfile="${project.build.dir}/${project.docs.filename}" basedir="${project.apidoc.tar.dir}" />
+		<delete dir="${project.apidoc.tar.dir}" failonerror="false" />
+		<delete dir="${project.apidoc.dir}" failonerror="false" />
+	</target>
+
+	<!-- tar projects -->
+	<target name="tar" depends="init" description="打包所有源码文件">
+		<property name="project.tar.dir" value="${project.build.dir}/tar" />
+		<delete dir="${project.tar.dir}" />
+		<mkdir dir="${project.tar.dir}" />
+		<copy todir="${project.tar.dir}/src" failonerror="false">
+			<fileset dir="${project.src.dir}">
+				<exclude name="**/.svn" />
+				<exclude name="**/.git" />
+			</fileset>
+		</copy>
+		<copy todir="${project.tar.dir}/test" failonerror="false">
+			<fileset dir="${project.test.src.dir}">
+				<exclude name="**/.svn" />
+				<exclude name="**/.git" />
+			</fileset>
+		</copy>
+		<copy todir="${project.tar.dir}/doc" failonerror="false">
+			<fileset dir="${project.dir}/doc">
+				<exclude name="**/.svn" />
+				<exclude name="**/.git" />
+			</fileset>
+		</copy>
+		<copy todir="${project.tar.dir}/tools" failonerror="false">
+			<fileset dir="${project.dir}/tools">
+				<exclude name="**/.svn" />
+				<exclude name="**/.git" />
+			</fileset>
+		</copy>
+		<if>
+			<equals arg1="${project.type}" arg2="war"/>
+			<then>
+				<copy todir="${project.tar.dir}/root" failonerror="false">
+					<fileset dir="${project.web.root}">
+						<exclude name="**/.svn" />
+						<exclude name="**/.git" />
+					</fileset>
+				</copy>
+			</then>
+			<else>
+			</else>
+		</if>
+		<copy file="build.xml" todir="${project.tar.dir}" failonerror="false" />
+		<copy file="ivy.xml" todir="${project.tar.dir}" failonerror="false" />
+		<copy file="ant.properties" todir="${project.tar.dir}" failonerror="false" />
+		<copy file="README" todir="${project.tar.dir}" failonerror="false" />
+		<zip destfile="${project.build.dir}/${project.tar.filename}" basedir="${project.tar.dir}" />
+		<delete dir="${project.tar.dir}" />
+	</target>
+
+	<!-- show depends -->
+	<target name="depends" depends="cleanall,init" description="显示工程所需依赖库清单">
+		<pathconvert pathsep="${line.separator}" property="echo.path.compile" refid="jits.classpath.depends" />
+		<echo message="depends libraries: " />
+		<echo message="${echo.path.compile}" />
+	</target>
+
+	<import file="${jits.sdk.settings.dir}/ide/eclipse3.6/build.xml" />
+	<import file="${jits.sdk.dir}/settings/ant/build-ivy.xml" />
+	<import file="${jits.sdk.dir}/settings/ant/build-jits.xml" />
+	
+	<target name="-do-dist-app">
+		<echo message="清理临时编译文件..."/>
+		<antcall target="cleanall" inheritall="true"/>
+		<echo message="编译程序文件..."/>
+		<antcall target="jar" inheritall="true"/>
+		
+		<property name="project.dist.dir" value="${project.build.dir}/dist"/>
+		<if>
+			<or>
+				<equals arg1="${project.dist.type}" arg2=""/>
+				<and>
+					<not>
+						<isset property="project.dist.type"/>
+					</not>
+				</and>
+			</or>
+			<then>
+			    <property name="project.config.dir" value="${project.dir}/doc/conf"/>
+			    <property name="project.dist.filename" value="${project.name}-${project.version}.zip"/>
+			</then>
+			<else>
+			    <property name="project.config.dir" value="${project.dir}/doc/conf/${project.dist.type}"/>
+			    <property name="project.dist.filename" value="${project.name}-${project.dist.type}-${project.version}.zip"/>
+			</else>
+		</if>
+			    
+		<echo message="清理并创建目标文件夹..."/>
+		<delete dir="${project.dist.dir}"/>
+		<mkdir dir="${project.dist.dir}"/>
+		<mkdir dir="${project.dist.dir}/bin"/>
+		<mkdir dir="${project.dist.dir}/conf"/>
+		<mkdir dir="${project.dist.dir}/libs"/>
+		<mkdir dir="${project.dist.dir}/data"/>
+		<mkdir dir="${project.dist.dir}/logs"/>
+		<echo message="复制目标文件..."/>
+		<copy todir="${project.dist.dir}/libs" overwrite="true" flatten="true">
+			<path refid="jits.classpath.depends"/>
+		</copy>
+		<copy tofile="${project.dist.dir}/libs/${project.name}-${project.version}.jar" file="${project.build.dir}/${project.jar.filename}"/>
+		
+		<copy todir="${project.dist.dir}/bin" file="${jits.sdk.dir}/misc/app.bat"/>
+		<copy todir="${project.dist.dir}/bin" file="${jits.sdk.dir}/misc/app-install-sevice.bat"/>
+		<copy todir="${project.dist.dir}/bin" file="${jits.sdk.dir}/misc/app-run-console.bat"/>
+		<copy todir="${project.dist.dir}/bin" file="${jits.sdk.dir}/misc/app-start-service.bat"/>
+		<copy todir="${project.dist.dir}/bin" file="${jits.sdk.dir}/misc/app-stop-service.bat"/>
+		<copy todir="${project.dist.dir}/bin" file="${jits.sdk.dir}/misc/app-uninstall-service.bat"/>
+		<copy tofile="${project.dist.dir}/bin/app.exe" file="${jits.sdk.dir}/misc/wrapper.exe"/>
+		<copy tofile="${project.dist.dir}/libs/wrapper.dll" file="${jits.sdk.dir}/libs/external/wrapper-windows-x86.dll"/>
+		
+		<copy todir="${project.dist.dir}/conf" file="${project.config.dir}/jmx-access.conf"/>
+		<copy todir="${project.dist.dir}/conf" file="${project.config.dir}/jmx-users.conf"/>
+		<copy todir="${project.dist.dir}/conf" file="${project.config.dir}/log4j.properties"/>
+		<copy todir="${project.dist.dir}/conf" file="${project.config.dir}/app.conf"/>
+		
+		<antcall target="-pre-dist-app" inheritall="true"/>
+				
+		<pathconvert refid="jits.classpath.depends" pathsep="${line.separator}" property="project.all.depends.echo.tmp" />
+		<echo message="${project.all.depends.echo.tmp}" file="${project.build.dir}/project.all.depends"/>
+		<echo message="${line.separator}${project.jar.version.filename}" file="${project.build.dir}/project.all.depends" append="true"/>
+		<exec executable="sed" output="${project.build.dir}/project.all.depends" input="${project.build.dir}/project.all.depends">
+			<arg value="'s/^[A-Za-z0-9][:].*\\\\//g'"/>
+		</exec>
+		<exec executable="awk" outputproperty="project.wrapper.java.classpath" input="${project.build.dir}/project.all.depends">
+			<arg line="-f ${jits.sdk.dir}/tools/gen-wrapper-depends.awk"/>
+		</exec>
+		
+		<copy tofile="${project.dist.dir}/conf/run.conf" file="${project.config.dir}/run.conf"/>
+		<replace file="${project.dist.dir}/conf/run.conf" token="__WRAPPER_JAVA_CLASSPATH__" value="${project.wrapper.java.classpath}"/>
+		
+		<zip destfile="${project.build.dir}/${project.dist.filename}" basedir="${project.dist.dir}" />
+		<delete dir="${project.dist.dir}"/>
+		
+		<antcall target="-post-dist-app" inheritall="true" />
+		
+		<echo message="完成工程发行打包，请复制目标文件："/>
+		<echo message="${project.build.dir}/${project.dist.filename}"/>
+	</target>
+	
+	<target name="-pre-dist-app"></target>
+	<target name="-post-dist-app"></target>
+	
+	<target name="dist" description="编译工程并生成发行包文件">
+	    <antcall target="-do-dist-app" inheritall="true"/>
+	</target>
+	
+</project>

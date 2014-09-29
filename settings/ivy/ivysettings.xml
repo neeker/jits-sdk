@@ -1,0 +1,20 @@
+<ivysettings>
+	<settings defaultResolver="default" />
+	<include url="file:/${jits.ivy.settings.dir}/ivysettings-public.xml" />
+	<include url="file:/${jits.ivy.settings.dir}/ivysettings-shared.xml" />
+	<include url="file:/${jits.ivy.settings.dir}/ivysettings-local.xml" />
+	<include url="file:/${jits.ivy.settings.dir}/ivysettings-main-chain.xml" />
+
+	<property name="ivy.inline.default.root" value="${ivy.default.ivy.user.dir}/inline" override="false" />
+	<resolvers>
+		<filesystem name="inline" checkmodified="true">
+			<ivy pattern="${ivy.inline.default.root}/[organisation]/[module]/[revision]/[type]s/[artifact].[ext]" />
+			<artifact pattern="${ivy.inline.default.root}/[organisation]/[module]/[revision]/[type]s/[artifact].[ext]" />
+		</filesystem>
+		<chain name="default" returnFirst="true" checkmodified="false">
+			<resolver ref="inline" />
+			<resolver ref="local" />
+			<resolver ref="main" />
+		</chain>
+	</resolvers>
+</ivysettings>

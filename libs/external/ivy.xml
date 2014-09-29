@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="1.0">
+	<info organisation="${jits.external.temp.lib.org}" module="${jits.external.temp.lib.name}" revision="${jits.external.temp.lib.rev}" />
+	<dependencies>
+	</dependencies>
+</ivy-module>

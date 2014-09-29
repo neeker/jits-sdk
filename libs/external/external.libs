@@ -1,0 +1,7 @@
+org="ant-contrib" name="ant-contrib" rev="1.0b3"
+org="org.apache.ivy" name="ivy" rev="2.3.0-rc1"
+org="com.partsoft" name="jits-utils" rev="0.1"
+org="com.partsoft" name="jits-loader" rev="0.4"
+org="testng" name="testng" rev="6.8"
+org="junit" name="junit" rev="4.11"
+org="org.tanukisoftware" name="wrapper" rev="3.5.24"
