@@ -401,8 +401,8 @@
 		<copy tofile="${project.dist.dir}/bin/app.exe" file="${jits.sdk.dir}/misc/wrapper.exe"/>
 		<copy tofile="${project.dist.dir}/libs/wrapper.dll" file="${jits.sdk.dir}/libs/external/wrapper-windows-x86.dll"/>
 		
-		<copy todir="${project.dist.dir}/conf" file="${project.config.dir}/jmx-access.conf"/>
-		<copy todir="${project.dist.dir}/conf" file="${project.config.dir}/jmx-users.conf"/>
+		<copy todir="${project.dist.dir}/conf" file="${project.config.dir}/jmx-access.conf" failonerror="false"/>
+		<copy todir="${project.dist.dir}/conf" file="${project.config.dir}/jmx-users.conf" failonerror="false"/>
 		<copy todir="${project.dist.dir}/conf" file="${project.config.dir}/log4j.properties"/>
 		<copy todir="${project.dist.dir}/conf" file="${project.config.dir}/app.conf"/>
 		
